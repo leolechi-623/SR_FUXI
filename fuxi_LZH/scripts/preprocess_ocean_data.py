@@ -83,6 +83,8 @@ class ConvertConfig:
     out_dir: str
     prefix: str
     start: int = 0
+    frame_start: int | None = None
+    frame_stop: int | None = None
     with_grid: bool = False
     include_depth: bool = True
     level_vars: Sequence[str] = DEFAULT_LEVEL_VARS
@@ -121,9 +123,26 @@ def preprocess_ocean_to_npy(cfg: ConvertConfig) -> None:
                 f"Variables {missing} are not present in NetCDF file {cfg.nc_path}"
             )
 
-        times = ds["ocean_time"].values if "ocean_time" in ds else range(ds.dims["time"])
+        total_frames = (
+            ds.dims["ocean_time"]
+            if "ocean_time" in ds.dims
+            else ds.dims.get("time")
+        )
+        if total_frames is None:
+            raise KeyError("Dataset must contain 'ocean_time' or 'time' dimension.")
 
-        for idx in tqdm(range(len(times)), desc=f"Exporting {os.path.basename(cfg.nc_path)}"):
+        begin = cfg.frame_start or 0
+        end = cfg.frame_stop if cfg.frame_stop is not None else total_frames
+        if not 0 <= begin < total_frames:
+            raise ValueError(f"frame-start {begin} outside valid range [0, {total_frames})")
+        if not 0 < end <= total_frames or end <= begin:
+            raise ValueError(
+                f"frame-stop {end} must be within (frame-start, {total_frames}]"
+            )
+
+        indices = range(begin, end)
+
+        for offset, idx in enumerate(tqdm(indices, desc=f"Exporting {os.path.basename(cfg.nc_path)}")):
             stacked = [
                 ds[var].isel(ocean_time=idx).values if "ocean_time" in ds[var].dims
                 else ds[var].isel(time=idx).values
@@ -139,7 +158,7 @@ def preprocess_ocean_to_npy(cfg: ConvertConfig) -> None:
                 combined = arr
 
             combined = np.nan_to_num(combined, nan=0.0, posinf=0.0, neginf=0.0)
-            step = idx + cfg.start
+            step = cfg.start + offset
             filename = f"{cfg.prefix}_step{step:02d}.npy"
             np.save(os.path.join(cfg.out_dir, filename), combined.astype(np.float32))
 
@@ -224,6 +243,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Index offset applied to the *_stepXX.npy filenames.",
     )
     to_npy.add_argument(
+        "--frame-start",
+        type=int,
+        default=None,
+        help="First frame index (inclusive) to export from the NetCDF file.",
+    )
+    to_npy.add_argument(
+        "--frame-stop",
+        type=int,
+        default=None,
+        help="Last frame index (exclusive) to export from the NetCDF file.",
+    )
+    to_npy.add_argument(
         "--with-grid",
         action="store_true",
         help="Append lon/lat grid channels (expected for 10km data).",
@@ -281,6 +312,8 @@ def main(argv: Sequence[str] | None = None) -> None:
             out_dir=args.out_dir,
             prefix=prefix,
             start=args.start,
+            frame_start=args.frame_start,
+            frame_stop=args.frame_stop,
             with_grid=args.with_grid,
             include_depth=not args.skip_depth,
             level_vars=args.vars,
