@@ -1,0 +1,224 @@
+# 🚀 SR_surface - 5分钟快速开始
+
+## 第一步：查看项目说明
+
+```bash
+cd c:\fuxi\SR_surface
+
+# 阅读以下文件（按顺序）
+# 1. START_HERE.md (你在这里 👈)
+# 2. QUICKSTART.md (详细教程)
+# 3. README.md (完整文档)
+```
+
+## 第二步：安装依赖
+
+```bash
+pip install mindspore numpy pyyaml scipy
+```
+
+## 第三步：运行演示
+
+```bash
+# 方法 1: 使用 Jupyter 演示
+jupyter notebook demo.ipynb
+
+# 方法 2: 运行推理示例
+python scripts/inference.py
+
+# 方法 3: 运行评估示例
+python scripts/eval.py
+```
+
+## 第四步：开始训练
+
+```bash
+# 基础训练（使用默认配置）
+python main.py
+
+# 自定义参数
+python main.py --batch_size 2 --epochs 100 --learning_rate 1e-4
+
+# 更多参数
+python main.py --help
+```
+
+## 第五步：查看结果
+
+```bash
+# 检查点保存在
+./checkpoints/
+
+# 日志输出
+./logs/
+
+# 结果保存在
+./results/
+```
+
+## 📚 文档速查
+
+| 需求 | 文档 | 用时 |
+|------|------|------|
+| 快速开始 | START_HERE.md (本文) | 5分钟 |
+| 详细教程 | QUICKSTART.md | 15分钟 |
+| 完整文档 | README.md | 30分钟 |
+| 项目结构 | STRUCTURE.md | 10分钟 |
+| 学习代码 | demo.ipynb | 20分钟 |
+
+## 🎯 常见任务
+
+### 我想...
+
+**...看一个演示**
+```bash
+python scripts/inference.py
+```
+
+**...自己训练模型**
+```bash
+python main.py --epochs 50 --batch_size 2
+```
+
+**...评估现有模型**
+```bash
+python scripts/eval.py --ckpt_path ./checkpoints/best.ckpt
+```
+
+**...用自己的数据**
+1. 编辑 `configs/surface_sr.yaml`
+2. 修改数据路径
+3. 运行 `python main.py`
+
+**...修改模型架构**
+1. 编辑 `src/surface_sr_net.py`
+2. 调整 `SurfaceSRNet` 参数
+3. 运行 `python main.py`
+
+**...添加新的评估指标**
+1. 在 `src/eval.py` 的 `Metrics` 类中添加方法
+2. 在 `Evaluator` 的 `metrics_dict` 中注册
+3. 在配置文件中启用
+
+## ⚡ 快速参考
+
+### 关键命令
+
+```bash
+# 训练
+python main.py [--参数]
+
+# 评估  
+python scripts/eval.py --ckpt_path 检查点路径
+
+# 推理
+python scripts/inference.py
+
+# 分布式训练
+bash scripts/run_distributed_train.sh rank_table.json 8
+```
+
+### 关键配置
+
+编辑 `configs/surface_sr.yaml`:
+
+```yaml
+# 模型
+model.embed_dim: 96           # 嵌入维度
+model.depths: 12              # Block 数量
+model.num_heads: 8            # 注意力头数
+
+# 数据
+data.batch_size: 1            # 批大小
+data.normalize: true          # 是否标准化
+
+# 训练
+training.epochs: 100          # 训练轮数
+training.learning_rate: 1e-4  # 学习率
+training.loss_function.type: mae  # 损失函数
+
+# 设备
+device.target: Ascend         # 设备 (Ascend/GPU/CPU)
+device.device_id: 0           # 设备ID
+```
+
+### 关键类
+
+```python
+# 导入常用类
+from src.surface_sr_net import SurfaceSRNet
+from src.surface_sr import create_loss_fn, create_optimizer
+from src.data import SurfaceDataLoader
+from src.eval import Evaluator
+from src.config import load_yaml_config
+```
+
+## 🆘 遇到问题？
+
+| 问题 | 解决方案 |
+|------|---------|
+| 导入错误 | 检查 mindspore 是否安装 |
+| 显存不足 | 减小 batch_size |
+| 收敛慢 | 增大学习率或调整损失函数 |
+| 推理速度慢 | 检查设备设置，考虑使用 GPU |
+| 模型不收敛 | 检查数据质量，尝试其他损失函数 |
+
+更多常见问题见 **QUICKSTART.md**
+
+## 📞 获得帮助
+
+需要更多信息？
+
+1. 🔍 **查看文档**: QUICKSTART.md, README.md
+2. 💻 **看示例代码**: demo.ipynb, main.py
+3. 📖 **查看源代码**: src/ 目录中的 .py 文件
+4. ❓ **查看常见问题**: QUICKSTART.md 的 FAQ 部分
+
+## ✅ 检查清单
+
+你已经准备好了吗？
+
+- [ ] 安装了依赖 (`pip install -r requirements.txt`)
+- [ ] 阅读了 START_HERE.md (本文)
+- [ ] 运行了演示代码 (`python scripts/inference.py`)
+- [ ] 尝试了基础训练 (`python main.py`)
+- [ ] 理解了项目结构 (查看 STRUCTURE.md)
+
+如果全部打勾，恭喜！你已经可以使用 SR_surface 了！ 🎉
+
+## 🎓 学习资源推荐
+
+### 新手
+1. 运行 demo.ipynb (交互式学习)
+2. 阅读 QUICKSTART.md (概念理解)
+3. 修改参数进行实验
+
+### 进阶
+1. 研究 src/surface_sr_net.py (网络设计)
+2. 优化 src/surface_sr.py (训练流程)
+3. 添加自定义功能
+
+### 研究
+1. 分析 src/eval.py (评估指标)
+2. 参考 README.md (原理说明)
+3. 设计改进方案
+
+## 🚀 立即开始！
+
+```bash
+# 最快的开始方式
+cd c:\fuxi\SR_surface
+python scripts/inference.py      # 看推理演示 (2分钟)
+jupyter notebook demo.ipynb      # 交互式演示 (20分钟)
+python main.py                   # 自己训练 (取决于数据量)
+```
+
+---
+
+**准备好了吗？** 让我们开始吧！ 🚀
+
+需要帮助？查看 **QUICKSTART.md** 获取更多信息。
+
+**更新**: 2025-11-06  
+**版本**: 1.0.0  
+**状态**: ✅ 可用

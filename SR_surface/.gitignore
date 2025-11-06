@@ -1,0 +1,68 @@
+# .gitignore for SR_surface
+
+# 字节编译
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C 扩展
+*.so
+
+# 发行版本
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# 环境
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 数据和结果
+data/
+checkpoints/
+logs/
+results/
+experiments/
+*.npy
+*.npz
+*.nc
+*.h5
+*.hdf5
+
+# 临时文件
+*.tmp
+*.temp
+*.bak

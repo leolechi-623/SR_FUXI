@@ -1,0 +1,115 @@
+# Surface Super-Resolution Configuration File
+
+# 模型配置
+model:
+  type: "SurfaceSRNet"
+  in_channels: 6          # 表层输入变量数 (e.g., 温度, 湿度, 压力, 风速U, 风速V, 降水)
+  out_channels: 6         # 输出通道数
+  embed_dim: 96          # 嵌入维度
+  depths: 12             # Swin Transformer Block 数量
+  num_heads: 8           # 注意力头数
+  kernel_size: [4, 4]    # Patch 恢复卷积核大小
+  
+# 数据配置
+data:
+  # 低分辨率设置
+  low_resolution:
+    height: 256
+    width: 256
+  
+  # 高分辨率设置 (超分放大倍数: 4倍)
+  high_resolution:
+    height: 1024
+    width: 1024
+  
+  # 数据路径
+  train_data_path: "./data/train"
+  val_data_path: "./data/val"
+  test_data_path: "./data/test"
+  
+  # 数据格式: "npy", "nc", "netcdf"
+  data_format: "npy"
+  
+  # 数据加载
+  batch_size: 1
+  num_workers: 4
+  shuffle: true
+  
+  # 标准化参数 (可选，留空时自动计算)
+  normalize: true
+  mean: null
+  std: null
+
+# 训练配置
+training:
+  epochs: 100
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-5
+  
+  # 学习率调度
+  lr_scheduler:
+    type: "cosine"  # "constant", "linear", "cosine", "exponential"
+    warmup_steps: 1000
+    min_lr: 1.0e-6
+  
+  # 损失函数
+  loss_function:
+    type: "mae"  # "mae", "mse", "combined", "perceptual"
+    mae_weight: 0.7      # 当 type='combined' 时使用
+    mse_weight: 0.3      # 当 type='combined' 时使用
+  
+  # 优化器配置
+  optimizer:
+    type: "adam"  # "adam", "sgd", "adamw"
+    beta1: 0.9
+    beta2: 0.999
+    eps: 1.0e-8
+  
+  # 梯度裁剪
+  grad_clip: true
+  max_grad_norm: 1.0
+  
+  # 混合精度训练
+  mixed_precision: "O0"  # "O0": 无, "O1": 自动, "O2": 半精度, "O3": 完全半精度
+  
+  # 检查点保存
+  save_interval: 10       # 每 N 个 epoch 保存一次
+  eval_interval: 5        # 每 N 个 epoch 评估一次
+  ckpt_keep_num: 3        # 保留最新的 N 个检查点
+  ckpt_dir: "./checkpoints"
+
+# 评估配置
+evaluation:
+  metrics: ["mae", "mse", "rmse", "psnr", "ssim"]
+  
+  # 评估方式: "full", "patch"
+  eval_mode: "full"
+  
+  # 当 eval_mode='patch' 时的 patch 大小
+  patch_size: 256
+  
+  # 保存评估结果
+  save_results: true
+  results_dir: "./results"
+
+# 设备配置
+device:
+  target: "Ascend"        # "Ascend", "GPU", "CPU"
+  device_id: 0
+  mode: "GRAPH"           # "GRAPH", "PYNATIVE"
+  distribute: false       # 是否使用分布式训练
+
+# 日志配置
+logging:
+  level: "INFO"
+  log_dir: "./logs"
+  log_file: "surface_sr.log"
+  log_interval: 100       # 每 N 步打印一次日志
+
+# 其他配置
+misc:
+  seed: 42
+  # 是否使用 GPU 加速某些操作
+  use_gpu_mem_pool: false
+  # 是否启用自动混合精度对话
+  auto_mixed_precision: false
